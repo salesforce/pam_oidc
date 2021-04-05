@@ -1,0 +1,2 @@
+pam_oidc.so
+pam_oidc.h
