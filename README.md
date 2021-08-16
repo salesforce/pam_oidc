@@ -24,7 +24,7 @@ auth required pam_oidc.so issuer=https://accounts.google.com aud=12345-v12345.ap
 
 Required.
 
-The issuer URL. The OpenID configuration should be available at <issuer>/.well-known/openid-configuration
+The issuer URL. The OpenID configuration should be available at _issuer_/.well-known/openid-configuration
 
 #### aud
 
