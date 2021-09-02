@@ -9,4 +9,4 @@ homepage: "https://salesforce.com"
 license: "BSD-3-Clause"
 contents:
   - src: pam_oidc.so
-    dst: /usr/lib64/pam_oidc.so
+    dst: /usr/lib64/security/pam_oidc.so
