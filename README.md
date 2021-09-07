@@ -62,6 +62,12 @@ Default: (no value)
 
 If specified, the required value of the `acr` claim in the token for authentication to pass.
 
+#### http_proxy
+
+Default: (no value)
+
+If specified, an HTTP proxy used to connect to the issuer to discover OpenID Connect parameters.
+
 ## Local Testing
 
 A Vagrant VM is available for local testing:

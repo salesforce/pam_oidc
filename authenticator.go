@@ -9,10 +9,14 @@ import (
 	"bytes"
 	"context"
 	"fmt"
+	"net/http"
+	"net/url"
 	"strings"
 	"text/template"
 
 	"github.com/pardot/oidc"
+	"github.com/pardot/oidc/discovery"
+	"golang.org/x/net/http/httpproxy"
 )
 
 type authenticator struct {
@@ -46,12 +50,28 @@ type authenticator struct {
 	aud      string
 }
 
-func discoverAuthenticator(ctx context.Context, issuer string, aud string) (*authenticator, error) {
-	verifier, err := oidc.DiscoverVerifier(ctx, issuer)
+func discoverAuthenticator(ctx context.Context, issuer string, aud string, httpProxy string) (*authenticator, error) {
+	transport := http.DefaultTransport.(*http.Transport).Clone()
+	if httpProxy != "" {
+		// Use no_proxy from environment, if present, but override proxy URL
+		cfg := httpproxy.FromEnvironment()
+		cfg.HTTPProxy = httpProxy
+		cfg.HTTPSProxy = httpProxy
+
+		proxyFunc := cfg.ProxyFunc()
+		transport.Proxy = func(r *http.Request) (*url.URL, error) {
+			return proxyFunc(r.URL)
+		}
+	}
+
+	client, err := discovery.NewClient(ctx, issuer, discovery.WithHTTPClient(&http.Client{
+		Transport: transport,
+	}))
 	if err != nil {
 		return nil, fmt.Errorf("discovering verifier: %v", err)
 	}
 
+	verifier := oidc.NewVerifier(issuer, client)
 	return &authenticator{
 		verifier: verifier,
 		aud:      aud,

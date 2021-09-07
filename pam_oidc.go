@@ -79,7 +79,7 @@ func pam_sm_authenticate_go(pamh *C.pam_handle_t, flags C.int, argc C.int, argv 
 	}
 	token := C.GoString(cToken)
 
-	auth, err := discoverAuthenticator(ctx, cfg.Issuer, cfg.Aud)
+	auth, err := discoverAuthenticator(ctx, cfg.Issuer, cfg.Aud, cfg.HTTPProxy)
 	if err != nil {
 		pamSyslog(pamh, syslog.LOG_ERR, "failed to discover authenticator: %v", err)
 		return C.PAM_AUTH_ERR

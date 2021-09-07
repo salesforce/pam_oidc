@@ -27,6 +27,8 @@ type config struct {
 	AuthorizedGroups []string
 	// RequireACR is the required ACR value that must be present in the claims.
 	RequireACR string
+	// HTTPProxy is the HTTP proxy server used to connect to HTTP services.
+	HTTPProxy string
 }
 
 func configFromArgs(args []string) (*config, error) {
@@ -51,6 +53,8 @@ func configFromArgs(args []string) (*config, error) {
 			c.AuthorizedGroups = strings.Split(parts[1], ",")
 		case "require_acr":
 			c.RequireACR = parts[1]
+		case "http_proxy":
+			c.HTTPProxy = parts[1]
 		default:
 			return nil, fmt.Errorf("unknown option: %v", parts[0])
 		}
