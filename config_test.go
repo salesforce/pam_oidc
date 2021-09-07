@@ -29,11 +29,13 @@ func TestParseConfigFromArgs(t *testing.T) {
 		},
 		{
 			name: "basic overriding defaults",
-			args: []string{"issuer=https://example.com", "aud=example-aud", "user_template={{.Email}}"},
+			args: []string{"issuer=https://example.com", "aud=example-aud", "user_template={{.Email}}", "groups_claim_key=roles", "authorized_groups=foo,bar,baz"},
 			want: &config{
-				Issuer:       "https://example.com",
-				Aud:          "example-aud",
-				UserTemplate: `{{.Email}}`,
+				Issuer:           "https://example.com",
+				Aud:              "example-aud",
+				UserTemplate:     `{{.Email}}`,
+				GroupsClaimKey:   "roles",
+				AuthorizedGroups: []string{"foo", "bar", "baz"},
 			},
 		},
 		{
