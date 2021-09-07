@@ -25,6 +25,8 @@ type config struct {
 	// A user must be a member of at least one of the groups in the list, if
 	// specified.
 	AuthorizedGroups []string
+	// RequireACR is the required ACR value that must be present in the claims.
+	RequireACR string
 }
 
 func configFromArgs(args []string) (*config, error) {
@@ -47,6 +49,8 @@ func configFromArgs(args []string) (*config, error) {
 			c.GroupsClaimKey = parts[1]
 		case "authorized_groups":
 			c.AuthorizedGroups = strings.Split(parts[1], ",")
+		case "require_acr":
+			c.RequireACR = parts[1]
 		default:
 			return nil, fmt.Errorf("unknown option: %v", parts[0])
 		}

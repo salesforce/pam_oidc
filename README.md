@@ -56,6 +56,12 @@ Default: (no value)
 
 If specified, a comma-separated list of groups required for authentication to pass. A user must be a member of _at least_ one of the groups in the list, if specified.
 
+#### require\_acr
+
+Default: (no value)
+
+If specified, the required value of the `acr` claim in the token for authentication to pass.
+
 ## Local Testing
 
 A Vagrant VM is available for local testing:
