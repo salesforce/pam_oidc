@@ -62,7 +62,7 @@ Default: (no value)
 
 If specified, the required value of the `acr` claim in the token for authentication to pass.
 
-#### http_proxy
+#### http\_proxy
 
 Default: (no value)
 
