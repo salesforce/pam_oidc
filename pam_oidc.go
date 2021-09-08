@@ -79,12 +79,14 @@ func pam_sm_authenticate_go(pamh *C.pam_handle_t, flags C.int, argc C.int, argv 
 	}
 	token := C.GoString(cToken)
 
-	auth, err := discoverAuthenticator(ctx, cfg.Issuer, cfg.Aud)
+	auth, err := discoverAuthenticator(ctx, cfg.Issuer, cfg.Aud, cfg.HTTPProxy)
 	if err != nil {
 		pamSyslog(pamh, syslog.LOG_ERR, "failed to discover authenticator: %v", err)
 		return C.PAM_AUTH_ERR
 	}
 	auth.UserTemplate = cfg.UserTemplate
+	auth.GroupsClaimKey = cfg.GroupsClaimKey
+	auth.AuthorizedGroups = cfg.AuthorizedGroups
 
 	if err := auth.Authenticate(ctx, user, token); err != nil {
 		pamSyslog(pamh, syslog.LOG_WARNING, "failed to authenticate: %v", err)

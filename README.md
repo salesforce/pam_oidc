@@ -42,6 +42,32 @@ For example, `{{.Subject}}` would mean that users are expected to authenticate w
 
 The `trimPrefix` and `trimSuffix` functions are available. For example `{{.Subject | trimSuffix "@example.com"}}` would mean a user whose token subject is `jdoe@example.com` would authenticate as `jdoe`.
 
+#### groups\_claim\_key
+
+Default: `groups`
+
+The name of the key within the token claims that specifies which groups a user is a member of.
+
+If the token uses a key other than `groups` (e.g., `{"roles":["a", "b", "c"]}`), specifies `groups_claim_key=roles`.
+
+#### authorized\_groups
+
+Default: (no value)
+
+If specified, a comma-separated list of groups required for authentication to pass. A user must be a member of _at least_ one of the groups in the list, if specified.
+
+#### require\_acr
+
+Default: (no value)
+
+If specified, the required value of the `acr` claim in the token for authentication to pass.
+
+#### http\_proxy
+
+Default: (no value)
+
+If specified, an HTTP proxy used to connect to the issuer to discover OpenID Connect parameters.
+
 ## Local Testing
 
 A Vagrant VM is available for local testing:
@@ -74,7 +100,8 @@ With the token from `gcloud auth print-identity-token`, attempt to login:
 ```
 TOKEN="..." # paste from `gcloud auth print-identity-token`
 
-# The token must be specified using --password=... because it is too long for MySQL to accept interactively
+# The token must be specified using --password=... because it is too long for
+# MySQL to accept interactively
 mysql --user="jdoe@gmail.com" --password="$TOKEN"
 ```
 

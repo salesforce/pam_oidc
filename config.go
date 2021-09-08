@@ -18,6 +18,17 @@ type config struct {
 	// UserTemplate is a template that, when rendered with the JWT claims, should
 	// match the user being authenticated.
 	UserTemplate string
+	// GroupsClaimKey is the name of the key within the token claims that
+	// specifies which groups a user is a member of.
+	GroupsClaimKey string
+	// AuthorizedGroups is a list of groups required for authentication to pass.
+	// A user must be a member of at least one of the groups in the list, if
+	// specified.
+	AuthorizedGroups []string
+	// RequireACR is the required ACR value that must be present in the claims.
+	RequireACR string
+	// HTTPProxy is the HTTP proxy server used to connect to HTTP services.
+	HTTPProxy string
 }
 
 func configFromArgs(args []string) (*config, error) {
@@ -25,6 +36,10 @@ func configFromArgs(args []string) (*config, error) {
 
 	for _, arg := range args {
 		parts := strings.SplitN(arg, "=", 2)
+		if len(parts) != 2 {
+			return nil, fmt.Errorf("malformed arg: %v", arg)
+		}
+
 		switch parts[0] {
 		case "issuer":
 			c.Issuer = parts[1]
@@ -32,6 +47,14 @@ func configFromArgs(args []string) (*config, error) {
 			c.Aud = parts[1]
 		case "user_template":
 			c.UserTemplate = parts[1]
+		case "groups_claim_key":
+			c.GroupsClaimKey = parts[1]
+		case "authorized_groups":
+			c.AuthorizedGroups = strings.Split(parts[1], ",")
+		case "require_acr":
+			c.RequireACR = parts[1]
+		case "http_proxy":
+			c.HTTPProxy = parts[1]
 		default:
 			return nil, fmt.Errorf("unknown option: %v", parts[0])
 		}

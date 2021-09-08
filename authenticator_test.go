@@ -43,11 +43,14 @@ func TestAuthenticate(t *testing.T) {
 	signer := signer.NewStatic(signingKey, verificationKeys)
 
 	cases := []struct {
-		name         string
-		user         string
-		token        string
-		userTemplate string
-		wantErr      string
+		name             string
+		user             string
+		token            string
+		userTemplate     string
+		groupsClaimKey   string
+		authorizedGroups []string
+		requireACR       string
+		wantErr          string
 	}{
 		{
 			name: "valid user, valid token",
@@ -75,6 +78,94 @@ func TestAuthenticate(t *testing.T) {
 			}),
 			userTemplate: "{{.Subject}}:{{index .Audience 0}}",
 			wantErr:      "",
+		},
+		{
+			name: "valid user, valid token, member of authorized group",
+			user: "jdoe",
+			token: mustJWT(t, signer, oidc.Claims{
+				Issuer:    "https://example.com",
+				Subject:   "jdoe",
+				Audience:  []string{"valid-aud"},
+				Expiry:    oidc.UnixTime(now.Add(10 * time.Minute).Unix()),
+				NotBefore: oidc.UnixTime(now.Add(-10 * time.Minute).Unix()),
+				IssuedAt:  oidc.UnixTime(now.Unix()),
+				Extra: map[string]interface{}{
+					"roles": []string{"group-a", "group-b"},
+				},
+			}),
+			groupsClaimKey:   "roles",
+			authorizedGroups: []string{"group-a"},
+			wantErr:          "",
+		},
+		{
+			name: "valid user, valid token, not member of authorized group",
+			user: "jdoe",
+			token: mustJWT(t, signer, oidc.Claims{
+				Issuer:    "https://example.com",
+				Subject:   "jdoe",
+				Audience:  []string{"valid-aud"},
+				Expiry:    oidc.UnixTime(now.Add(10 * time.Minute).Unix()),
+				NotBefore: oidc.UnixTime(now.Add(-10 * time.Minute).Unix()),
+				IssuedAt:  oidc.UnixTime(now.Unix()),
+				Extra: map[string]interface{}{
+					"roles": []string{"group-a", "group-b"},
+				},
+			}),
+			groupsClaimKey:   "roles",
+			authorizedGroups: []string{"group-c", "group-d"},
+			wantErr:          "user is member of [group-a group-b], but one of [group-c group-d] is required",
+		},
+		{
+			name: "valid user, valid token, malformed groups claim",
+			user: "jdoe",
+			token: mustJWT(t, signer, oidc.Claims{
+				Issuer:    "https://example.com",
+				Subject:   "jdoe",
+				Audience:  []string{"valid-aud"},
+				Expiry:    oidc.UnixTime(now.Add(10 * time.Minute).Unix()),
+				NotBefore: oidc.UnixTime(now.Add(-10 * time.Minute).Unix()),
+				IssuedAt:  oidc.UnixTime(now.Unix()),
+				Extra: map[string]interface{}{
+					"roles": "not a list",
+				},
+			}),
+			groupsClaimKey:   "roles",
+			authorizedGroups: []string{"group-c", "group-d"},
+			wantErr:          "user is not member of any groups, but one of [group-c group-d] is required",
+		},
+		{
+			name: "valid user, valid token, matching required ACR",
+			user: "jdoe",
+			token: mustJWT(t, signer, oidc.Claims{
+				Issuer:    "https://example.com",
+				Subject:   "jdoe",
+				Audience:  []string{"valid-aud"},
+				Expiry:    oidc.UnixTime(now.Add(10 * time.Minute).Unix()),
+				NotBefore: oidc.UnixTime(now.Add(-10 * time.Minute).Unix()),
+				IssuedAt:  oidc.UnixTime(now.Unix()),
+				Extra: map[string]interface{}{
+					"acr": "foo",
+				},
+			}),
+			requireACR: "foo",
+			wantErr:    "",
+		},
+		{
+			name: "valid user, valid token, not matching required ACR",
+			user: "jdoe",
+			token: mustJWT(t, signer, oidc.Claims{
+				Issuer:    "https://example.com",
+				Subject:   "jdoe",
+				Audience:  []string{"valid-aud"},
+				Expiry:    oidc.UnixTime(now.Add(10 * time.Minute).Unix()),
+				NotBefore: oidc.UnixTime(now.Add(-10 * time.Minute).Unix()),
+				IssuedAt:  oidc.UnixTime(now.Unix()),
+				Extra: map[string]interface{}{
+					"acr": "foo2",
+				},
+			}),
+			requireACR: "foo",
+			wantErr:    "acr is \"foo2\", but \"foo\" is required",
 		},
 		{
 			name: "valid user, valid token, invalid custom user template",
@@ -142,6 +233,9 @@ func TestAuthenticate(t *testing.T) {
 				aud:      "valid-aud",
 			}
 			auth.UserTemplate = tc.userTemplate
+			auth.GroupsClaimKey = tc.groupsClaimKey
+			auth.AuthorizedGroups = tc.authorizedGroups
+			auth.RequireACR = tc.requireACR
 
 			err := auth.Authenticate(ctx, tc.user, tc.token)
 			if err != nil && tc.wantErr == "" {
