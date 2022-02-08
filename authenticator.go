@@ -40,11 +40,11 @@ type authenticator struct {
 	// to pass.
 	AuthorizedGroups []string
 
-	// RequireACR is the required value of the acr claim in the token for
-	// authentication to pass.
+	// RequireACRs is a list of required values of the acr claim in the token for
+	// authentication to pass. At least one of the acrs must be present if specified
 	//
-	// If empty, the ACR value is not checked.
-	RequireACR string
+	// If the list is empty, the ACR value is not checked.
+	RequireACRs []string
 
 	verifier *oidc.Verifier
 	aud      string
@@ -131,9 +131,11 @@ func (a *authenticator) Authenticate(ctx context.Context, user string, token str
 		}
 	}
 
-	// Validate RequireACR
-	if len(a.RequireACR) > 0 && a.RequireACR != claims.ACR {
-		return fmt.Errorf("acr is %q, but %q is required", claims.ACR, a.RequireACR)
+	// Validate RequireACRs
+	if len(a.RequireACRs) > 0 {
+		if !isACRPresent(a.RequireACRs, claims.ACR) {
+			return fmt.Errorf("acr is %q, but one of %v is required", claims.ACR, a.RequireACRs)
+		}
 	}
 
 	return nil
@@ -145,6 +147,16 @@ func isMemberOfAtLeastOneGroup(authorizedGroups []string, groups []string) bool 
 			if wantGroup == group {
 				return true
 			}
+		}
+	}
+
+	return false
+}
+
+func isACRPresent(authorizedACRs []string, acr string) bool {
+	for _, wantACR := range authorizedACRs {
+		if wantACR == acr {
+			return true
 		}
 	}
 

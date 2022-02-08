@@ -87,6 +87,7 @@ func pam_sm_authenticate_go(pamh *C.pam_handle_t, flags C.int, argc C.int, argv 
 	auth.UserTemplate = cfg.UserTemplate
 	auth.GroupsClaimKey = cfg.GroupsClaimKey
 	auth.AuthorizedGroups = cfg.AuthorizedGroups
+	auth.RequireACRs = cfg.RequireACRs
 
 	if err := auth.Authenticate(ctx, user, token); err != nil {
 		pamSyslog(pamh, syslog.LOG_WARNING, "failed to authenticate: %v", err)

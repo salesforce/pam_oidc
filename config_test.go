@@ -36,10 +36,24 @@ func TestParseConfigFromArgs(t *testing.T) {
 				UserTemplate:     `{{.Email}}`,
 				GroupsClaimKey:   "roles",
 				AuthorizedGroups: []string{"foo", "bar", "baz"},
-				RequireACR:       "foo",
+				RequireACRs:      []string{"foo"},
 				HTTPProxy:        "http://example.com:8080",
 			},
 		},
+		{
+			name: "overriding defaults required_acrs",
+			args: []string{"issuer=https://example.com", "aud=example-aud", "user_template={{.Email}}", "groups_claim_key=roles", "authorized_groups=foo,bar,baz", "require_acrs=acr1,acr2,acr3", "http_proxy=http://example.com:8080"},
+			want: &config{
+				Issuer:           "https://example.com",
+				Aud:              "example-aud",
+				UserTemplate:     `{{.Email}}`,
+				GroupsClaimKey:   "roles",
+				AuthorizedGroups: []string{"foo", "bar", "baz"},
+				RequireACRs:      []string{"acr1", "acr2", "acr3"},
+				HTTPProxy:        "http://example.com:8080",
+			},
+		},
+
 		{
 			name:    "invalid option",
 			args:    []string{"issuer=https://example.com", "invalid=foo"},

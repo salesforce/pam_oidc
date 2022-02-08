@@ -62,6 +62,12 @@ Default: (no value)
 
 If specified, the required value of the `acr` claim in the token for authentication to pass.
 
+#### require\_acrs
+
+Default: (no value)
+
+If specified, a comma-separated list of acrs one of which must match the `acr` claim in the token for authentication to pass.
+
 #### http\_proxy
 
 Default: (no value)
