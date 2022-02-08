@@ -25,8 +25,9 @@ type config struct {
 	// A user must be a member of at least one of the groups in the list, if
 	// specified.
 	AuthorizedGroups []string
-	// RequireACR is the required ACR value that must be present in the claims.
-	RequireACR string
+	// RequireACRs is a list of required ACRs required for authentication to pass.
+	// one of the acr values must be present in the claims.
+	RequireACRs []string
 	// HTTPProxy is the HTTP proxy server used to connect to HTTP services.
 	HTTPProxy string
 }
@@ -52,7 +53,9 @@ func configFromArgs(args []string) (*config, error) {
 		case "authorized_groups":
 			c.AuthorizedGroups = strings.Split(parts[1], ",")
 		case "require_acr":
-			c.RequireACR = parts[1]
+			c.RequireACRs = []string{parts[1]}
+		case "require_acrs":
+			c.RequireACRs = strings.Split(parts[1], ",")
 		case "http_proxy":
 			c.HTTPProxy = parts[1]
 		default:

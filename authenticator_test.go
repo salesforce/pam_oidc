@@ -49,7 +49,7 @@ func TestAuthenticate(t *testing.T) {
 		userTemplate     string
 		groupsClaimKey   string
 		authorizedGroups []string
-		requireACR       string
+		requireACRs      []string
 		wantErr          string
 	}{
 		{
@@ -147,9 +147,27 @@ func TestAuthenticate(t *testing.T) {
 					"acr": "foo",
 				},
 			}),
-			requireACR: "foo",
-			wantErr:    "",
+			requireACRs: []string{"foo"},
+			wantErr:     "",
 		},
+		{
+			name: "valid user, valid token, matching one of required ACRs",
+			user: "jdoe",
+			token: mustJWT(t, signer, oidc.Claims{
+				Issuer:    "https://example.com",
+				Subject:   "jdoe",
+				Audience:  []string{"valid-aud"},
+				Expiry:    oidc.UnixTime(now.Add(10 * time.Minute).Unix()),
+				NotBefore: oidc.UnixTime(now.Add(-10 * time.Minute).Unix()),
+				IssuedAt:  oidc.UnixTime(now.Unix()),
+				Extra: map[string]interface{}{
+					"acr": "biz",
+				},
+			}),
+			requireACRs: []string{"foo", "biz"},
+			wantErr:     "",
+		},
+
 		{
 			name: "valid user, valid token, not matching required ACR",
 			user: "jdoe",
@@ -164,9 +182,27 @@ func TestAuthenticate(t *testing.T) {
 					"acr": "foo2",
 				},
 			}),
-			requireACR: "foo",
-			wantErr:    "acr is \"foo2\", but \"foo\" is required",
+			requireACRs: []string{"foo"},
+			wantErr:     "acr is \"foo2\", but one of [foo] is required",
 		},
+		{
+			name: "valid user, valid token, not matching one of required ACR",
+			user: "jdoe",
+			token: mustJWT(t, signer, oidc.Claims{
+				Issuer:    "https://example.com",
+				Subject:   "jdoe",
+				Audience:  []string{"valid-aud"},
+				Expiry:    oidc.UnixTime(now.Add(10 * time.Minute).Unix()),
+				NotBefore: oidc.UnixTime(now.Add(-10 * time.Minute).Unix()),
+				IssuedAt:  oidc.UnixTime(now.Unix()),
+				Extra: map[string]interface{}{
+					"acr": "foo2",
+				},
+			}),
+			requireACRs: []string{"foo", "bar", "biz"},
+			wantErr:     "acr is \"foo2\", but one of [foo bar biz] is required",
+		},
+
 		{
 			name: "valid user, valid token, invalid custom user template",
 			user: "jdoe",
@@ -235,7 +271,7 @@ func TestAuthenticate(t *testing.T) {
 			auth.UserTemplate = tc.userTemplate
 			auth.GroupsClaimKey = tc.groupsClaimKey
 			auth.AuthorizedGroups = tc.authorizedGroups
-			auth.RequireACR = tc.requireACR
+			auth.RequireACRs = tc.requireACRs
 
 			err := auth.Authenticate(ctx, tc.user, tc.token)
 			if err != nil && tc.wantErr == "" {
