@@ -10,3 +10,6 @@ license: "BSD-3-Clause"
 contents:
   - src: pam_oidc.so
     dst: /usr/lib64/security/${VERSIONED_OIDC_LIB}
+  - src: /usr/lib64/security/${VERSIONED_OIDC_LIB}
+    dst: /usr/lib64/security/pam_oidc.so
+    type: symlink
