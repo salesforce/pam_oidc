@@ -1,3 +1,5 @@
 pam_oidc.so
 pam_oidc.h
 pam_oidc-*.rpm
+nfpm.yaml
+.vagrant/
