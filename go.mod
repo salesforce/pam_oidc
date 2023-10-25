@@ -13,6 +13,6 @@ require (
 	github.com/golang/protobuf v1.3.2 // indirect
 	golang.org/x/crypto v0.0.0-20200622213623-75b288015ac9 // indirect
 	golang.org/x/oauth2 v0.0.0-20190604053449-0f29369cfe45 // indirect
-	golang.org/x/text v0.3.2 // indirect
+	golang.org/x/text v0.3.8 // indirect
 	google.golang.org/appengine v1.4.0 // indirect
 )
