@@ -17,7 +17,7 @@ import (
 
 	"github.com/pardot/oidc"
 	"github.com/pardot/oidc/signer"
-	"gopkg.in/square/go-jose.v2"
+	"github.com/go-jose/go-jose/v3"
 )
 
 func TestAuthenticate(t *testing.T) {
