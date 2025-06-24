@@ -1,4 +1,6 @@
-# pam\_oidc
+# DEPRECATED: pam\_oidc
+
+**Note: This project is no longer under active development and has been archived**
 
 **pam_oidc** authenticates users with an OpenID Connect (OIDC) token.
 
